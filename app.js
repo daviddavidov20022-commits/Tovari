@@ -9,6 +9,7 @@ let sortDir = 'asc';
 let mpCalcEnabled = false;
 let selectedArticles = new Set();
 let bulkCoef = 2.5;
+let currentShownArticles = [];
 
 // Persisted data
 let ndsMap = {};
@@ -391,28 +392,25 @@ function initEventListeners() {
 
     // Selection
     document.getElementById('selectAllItems').addEventListener('change', (e) => {
-        const filtered = getFilteredProducts();
         if (e.target.checked) {
-            filtered.forEach(p => selectedArticles.add(p.article));
+            currentShownArticles.forEach(art => selectedArticles.add(art));
         } else {
-            filtered.forEach(p => selectedArticles.delete(p.article));
+            currentShownArticles.forEach(art => selectedArticles.delete(art));
         }
         render();
     });
 
-    document.getElementById('tableBody').addEventListener('change', (e) => {
-        if (e.target.classList.contains('row-checkbox')) {
-            const article = e.target.dataset.article;
-            if (e.target.checked) selectedArticles.add(article);
-            else selectedArticles.delete(article);
+    document.getElementById('tableBody').addEventListener('click', (e) => {
+        const checkbox = e.target.closest('.row-checkbox');
+        if (checkbox) {
+            const article = checkbox.dataset.article;
+            checkbox.checked ? selectedArticles.add(article) : selectedArticles.delete(article);
             
-            // Update select all state
-            const filtered = getFilteredProducts();
-            const allSelected = filtered.length > 0 && filtered.every(p => selectedArticles.has(p.article));
-            document.getElementById('selectAllItems').checked = allSelected;
+            // Sync header checkbox
+            const allInSet = currentShownArticles.length > 0 && currentShownArticles.every(art => selectedArticles.has(art));
+            document.getElementById('selectAllItems').checked = allInSet;
             
-            // Highlight row
-            e.target.closest('tr').classList.toggle('row-selected', e.target.checked);
+            checkbox.closest('tr').classList.toggle('row-selected', checkbox.checked);
             updateSelectionToolbar();
         }
     });
@@ -1184,6 +1182,13 @@ function render() {
         }
         return true;
     });
+
+    currentShownArticles = filtered.map(p => p.article);
+
+    // Sync header checkbox on every render
+    const allInSet = currentShownArticles.length > 0 && currentShownArticles.every(art => selectedArticles.has(art));
+    const headerCheck = document.getElementById('selectAllItems');
+    if (headerCheck) headerCheck.checked = allInSet;
 
     // Sort
     if (sortField) {
