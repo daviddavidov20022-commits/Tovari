@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initBasketListeners();
     updateBasketBadge();
     initSelectionToolbar();
+    initSalesSection();
     render();
 });
 
@@ -1889,3 +1890,117 @@ function bulkAddToSimBasket() {
         render();
     }, 800);
 }
+
+// ===== SALES SECTION =====
+let salesDataRaw = [];
+let salesSortField = 'count';
+let salesSortDir = 'desc';
+
+function initSalesSection() {
+    const showSalesBtn = document.getElementById('showSalesBtn');
+    const salesModal = document.getElementById('salesModal');
+    const salesFileInput = document.getElementById('salesFileInput');
+    const loadSalesBtn = document.getElementById('loadSalesBtn');
+    const closeBtn = document.querySelector('.sales-close');
+
+    if (showSalesBtn) showSalesBtn.onclick = () => salesModal.classList.add('active');
+    if (closeBtn) closeBtn.onclick = () => salesModal.classList.remove('active');
+    if (salesModal) {
+        salesModal.onclick = (e) => {
+            if (e.target.id === 'salesModal') salesModal.classList.remove('active');
+        };
+    }
+
+    if (loadSalesBtn) loadSalesBtn.onclick = () => salesFileInput.click();
+    if (salesFileInput) salesFileInput.onchange = handleSalesFile;
+}
+
+function handleSalesFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        processSalesJson(json);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function processSalesJson(json) {
+    const artKeys = ['Артикул поставщика', 'Артикул', 'Vendor Code', 'Supplier Article', 'Арт.'];
+    const qtyKeys = ['Количество', 'Кол-во', 'Продано', 'Qty', 'Продано (шт)'];
+    const nameKeys = ['Наименование', 'Название', 'Product Name', 'Предмет'];
+
+    const summary = {};
+
+    json.forEach(row => {
+        let art = '';
+        let qty = 0;
+        let name = '';
+
+        for (let k of artKeys) if (row[k] !== undefined) art = String(row[k]).trim();
+        for (let k of qtyKeys) if (row[k] !== undefined) qty = parseFloat(row[k]) || 0;
+        for (let k of nameKeys) if (row[k] !== undefined) name = String(row[k]).trim();
+
+        if (art) {
+            if (!summary[art]) summary[art] = { count: 0, name: name };
+            summary[art].count += qty;
+        }
+    });
+
+    salesDataRaw = Object.entries(summary).map(([art, info]) => {
+        const p = PRODUCTS.find(prod => prod.article === art || prod.name === info.name);
+        let coef = 0;
+        if (p) {
+            const base = getEffectiveOptDyn(p);
+            if (base && p.cost_price) coef = base / p.cost_price;
+        }
+        return { article: art, name: info.name || (p?p.name:'—'), count: info.count, coef: coef };
+    }).filter(s => s.count > 0);
+
+    renderSales();
+}
+
+function renderSales() {
+    const body = document.getElementById('salesBody');
+    if (!salesDataRaw.length) {
+        body.innerHTML = '<div class="sales-empty"><p>Данные не найдены. Проверьте содержимое файла.</p></div>';
+        return;
+    }
+
+    salesDataRaw.sort((a, b) => {
+        let vA = a[salesSortField], vB = b[salesSortField];
+        if (typeof vA === 'string') { vA = vA.toLowerCase(); vB = vB.toLowerCase(); }
+        return salesSortDir === 'desc' ? (vA < vB ? 1 : -1) : (vA > vB ? 1 : -1);
+    });
+
+    let html = `<table class="sales-table"><thead><tr>
+        <th onclick="toggleSalesSort('num')">#</th>
+        <th>Арт</th>
+        <th onclick="toggleSalesSort('name')" style="cursor:pointer">Название ${salesSortField==='name'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+        <th onclick="toggleSalesSort('count')" style="cursor:pointer">Продажи шт. ${salesSortField==='count'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+        <th onclick="toggleSalesSort('coef')" style="cursor:pointer">Тек. Кэф ${salesSortField==='coef'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+    </tr></thead><tbody>`;
+
+    salesDataRaw.forEach((s, i) => {
+        html += `<tr>
+            <td class="sales-rank">${i+1}</td>
+            <td style="font-size:11px; color:var(--text-muted)">${s.article}</td>
+            <td class="sales-name">${s.name}</td>
+            <td class="sales-count">${formatNumber(Math.round(s.count))}</td>
+            <td class="sales-coef-col">${s.coef ? '×' + s.coef.toFixed(2) : '—'}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    body.innerHTML = html;
+}
+
+window.toggleSalesSort = function(f) {
+    if (salesSortField === f) salesSortDir = salesSortDir === 'desc' ? 'asc' : 'desc';
+    else { salesSortField = f; salesSortDir = 'desc'; }
+    renderSales();
+};
