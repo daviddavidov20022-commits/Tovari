@@ -169,6 +169,13 @@
                         <span class="mp-unit">%</span>
                     </div>
                 </div>
+                <div class="mp-field">
+                    <label for="mpSpp">СПП (для визуала)</label>
+                    <div class="mp-input-wrap">
+                        <input type="number" id="mpSpp" value="30" min="0" max="100" step="1">
+                        <span class="mp-unit">%</span>
+                    </div>
+                </div>
                 <div class="mp-field mp-info-box">
                     <span class="mp-formula">Цена МП = (Баз.цена + Доставка) ÷ (1 − Комиссия%)<br>Прибыль = Баз.цена − Учёт.цена − Налог(6% от Цены МП)<br><small style="opacity:0.6">Баз.цена = Спец цена (если ниже) или Опт.дин.</small></span>
                 </div>
@@ -203,6 +210,13 @@
                     <span class="checkbox-custom"></span>
                     <span>Только в наличии</span>
                 </label>
+            </div>
+            <div class="spp-control">
+                <label for="globalSpp">СПП:</label>
+                <div class="spp-input-wrap">
+                    <input type="number" id="globalSpp" value="30" min="0" max="100" step="1">
+                    <span class="spp-unit">%</span>
+                </div>
             </div>
         </div>
     </section>
@@ -243,6 +257,7 @@
                             Цена МП
                             <svg class="sort-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
                         </th>
+                        <th class="col-mp col-mp-spp mp-col-hidden">Цена СПП</th>
                         <th class="col-mp col-mp-tax mp-col-hidden">Налог</th>
                         <th class="col-mp col-mp-comm mp-col-hidden">Комиссия</th>
                         <th class="col-mp col-mp-profit mp-col-hidden sortable" data-sort="profit">

@@ -13,7 +13,7 @@ let ndsMap = {};
 let deliveryMap = {}; // per-product delivery overrides
 let commissionMap = {}; // per-product commission overrides
 let optDynMap = {}; // per-product opt_dyn overrides
-let mpConfig = { commission: 35, delivery: 700, tax: 6 };
+let mpConfig = { commission: 35, delivery: 700, tax: 6, spp: 30 };
 
 // ===== PRICE LABELS =====
 const PRICE_LABELS = {
@@ -153,6 +153,9 @@ function initMpCalc() {
     document.getElementById('mpCommission').value = mpConfig.commission;
     document.getElementById('mpDelivery').value = mpConfig.delivery;
     document.getElementById('mpTax').value = mpConfig.tax;
+    const sppVal = mpConfig.spp !== undefined ? mpConfig.spp : 30;
+    if (document.getElementById('mpSpp')) document.getElementById('mpSpp').value = sppVal;
+    if (document.getElementById('globalSpp')) document.getElementById('globalSpp').value = sppVal;
 }
 
 function getSubCategories(topCategory) {
@@ -344,13 +347,42 @@ function initEventListeners() {
     });
 
     // MP inputs
-    ['mpCommission', 'mpDelivery', 'mpTax'].forEach(id => {
-        document.getElementById(id).addEventListener('input', () => {
+    ['mpCommission', 'mpDelivery', 'mpTax', 'mpSpp', 'globalSpp', 'basketSpp'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => {
+            const val = parseFloat(el.value) || 0;
             mpConfig.commission = parseFloat(document.getElementById('mpCommission').value) || 0;
             mpConfig.delivery = parseFloat(document.getElementById('mpDelivery').value) || 0;
             mpConfig.tax = parseFloat(document.getElementById('mpTax').value) || 0;
+            mpConfig.spp = val; // The one currently being edited set the global config
+            
+            // Sync all SPP inputs
+            ['mpSpp', 'globalSpp', 'basketSpp'].forEach(sppId => {
+                const sppEl = document.getElementById(sppId);
+                if (sppEl) sppEl.value = mpConfig.spp;
+            });
+
             saveMpConfig();
-            render();
+            
+            // Update all items in simulation basket with new SPP
+            Object.keys(simBasket).forEach(article => {
+                const item = simBasket[article];
+                const product = PRODUCTS.find(p => p.article === article);
+                if (product) {
+                    const mp = calcMp(product, item.optDyn / (isNds(article) ? 1.05 : 1)); // Back-calculate base optDyn
+                    if (mp) {
+                        simBasket[article].sppPrice = mp.sppPrice;
+                    }
+                }
+            });
+            saveSimBasket();
+            
+            if (id === 'basketSpp') {
+                renderSimBasketTable();
+            } else {
+                render();
+            }
         });
     });
 
@@ -478,12 +510,14 @@ function updateRowMp(article, tr) {
         sell: tr.querySelector('.cell-mp-sell'),
         tax: tr.querySelector('.cell-mp-tax'),
         comm: tr.querySelector('.cell-mp-comm'),
-        profit: tr.querySelector('.cell-mp-profit')
+        profit: tr.querySelector('.cell-mp-profit'),
+        spp: tr.querySelector('.cell-mp-spp')
     };
     
     if (cells.sell) cells.sell.innerHTML = `${formatMoney(mp.sellPrice)}${hasSt ? `<span class="mp-total">${formatMoney(mp.sellPrice * stock)}</span>` : ''}`;
     if (cells.tax) cells.tax.innerHTML = `${formatMoney(mp.tax)}${hasSt ? `<span class="mp-total">${formatMoney(mp.tax * stock)}</span>` : ''}`;
     if (cells.comm) cells.comm.innerHTML = `${formatMoney(mp.commission)}${hasSt ? `<span class="mp-total">${formatMoney(mp.commission * stock)}</span>` : ''}`;
+    if (cells.spp) cells.spp.innerHTML = `${formatMoney(mp.sppPrice)}${hasSt ? `<span class="mp-total">${formatMoney(mp.sppPrice * stock)}</span>` : ''}`;
     if (cells.profit) {
         cells.profit.className = `cell-mp-profit ${profitClass}`;
         cells.profit.innerHTML = `${formatMoney(mp.profit)}${hasSt ? `<span class="mp-total ${profitClass}">${formatMoney(mp.profit * stock)}</span>` : ''}`;
@@ -534,7 +568,10 @@ function calcMp(product, overrideOptDyn) {
     const tax = Math.round(sellPrice * taxRate);
     const profit = optDyn - costPrice - tax;
     
-    return { sellPrice, commission, commissionPct, delivery, tax, profit, optDyn };
+    const sppRate = (mpConfig.spp || 0) / 100;
+    const sppPrice = Math.round(sellPrice * (1 - sppRate));
+    
+    return { sellPrice, commission, commissionPct, delivery, tax, profit, optDyn, sppPrice };
 }
 
 // ===== COEF SIMULATOR =====
@@ -685,6 +722,11 @@ function buildSimulatorHTML(product, currentCoef, minCoef, maxCoef) {
                 <span class="sim-val-orig">${mp ? formatMoney(mp.sellPrice) : '—'}</span>
                 <span class="sim-val-new" data-field="sellprice">${mp ? formatMoney(mp.sellPrice) : '—'}</span>
             </div>
+            <div class="sim-row" style="background:rgba(124, 92, 252, 0.05);border-radius:6px;">
+                <span class="sim-label" style="font-weight:600;color:var(--accent-light);">🛒 Для покупателя (СПП)</span>
+                <span class="sim-val-orig" style="color:var(--accent-light);opacity:0.8;">${mp ? formatMoney(mp.sppPrice) : '—'}</span>
+                <span class="sim-val-new" style="font-weight:700;color:var(--accent-light);" data-field="sppprice">${mp ? formatMoney(mp.sppPrice) : '—'}</span>
+            </div>
             <div class="sim-row">
                 <span class="sim-label">📋 Налог</span>
                 <span class="sim-val-orig">${mp ? formatMoney(mp.tax) : '—'}</span>
@@ -734,6 +776,7 @@ function updateSimulatorValues(popup, product, newCoef) {
     
     if (mp) {
         set('sellprice', formatMoney(mp.sellPrice));
+        set('sppprice', formatMoney(mp.sppPrice));
         set('tax', formatMoney(mp.tax));
         set('commission', formatMoney(mp.commission));
         const profitClass = mp.profit > 0 ? 'positive' : mp.profit < 0 ? 'negative' : '';
@@ -1170,7 +1213,7 @@ function render() {
 
     // Table
     const tbody = document.getElementById('tableBody');
-    const colSpan = mpCalcEnabled ? 15 : 9;
+    const colSpan = mpCalcEnabled ? 16 : 9;
 
     if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="empty-state"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="24" cy="24" r="20"/><path d="M16 20h0M32 20h0M18 30s2 4 6 4 6-4 6-4"/></svg><p>Товары не найдены</p></div></td></tr>`;
@@ -1226,6 +1269,10 @@ function render() {
                             ${formatMoney(mp.sellPrice)}
                             ${hasSt ? `<span class="mp-total">${formatMoney(mp.sellPrice * stock)}</span>` : ''}
                         </td>
+                        <td class="cell-mp-spp" style="color:var(--accent-light);">
+                            ${formatMoney(mp.sppPrice)}
+                            ${hasSt ? `<span class="mp-total" style="color:var(--accent-light); opacity:0.8;">${formatMoney(mp.sppPrice * stock)}</span>` : ''}
+                        </td>
                         <td class="cell-mp-tax">
                             ${formatMoney(mp.tax)}
                             ${hasSt ? `<span class="mp-total">${formatMoney(mp.tax * stock)}</span>` : ''}
@@ -1241,6 +1288,7 @@ function render() {
                 } else {
                     mpCols += `
                         <td class="cell-mp-sell">—</td>
+                        <td class="cell-mp-spp">—</td>
                         <td class="cell-mp-tax">—</td>
                         <td class="cell-mp-comm">—</td>
                         <td class="cell-mp-profit zero">—</td>`;
@@ -1340,6 +1388,7 @@ function addToSimBasket(product, newCoef) {
         coef: newCoef,
         optDyn: mp.optDyn,
         sellPrice: mp.sellPrice,
+        sppPrice: mp.sppPrice,
         tax: mp.tax,
         commission: mp.commission,
         profit: mp.profit,
@@ -1404,11 +1453,18 @@ function renderSimBasketTable() {
         return;
     }
     
-    let totalRevenue = 0, totalProfit = 0, totalTax = 0, totalComm = 0, totalItems = 0;
+    let totalRevenue = 0, totalProfit = 0, totalTax = 0, totalComm = 0, totalItems = 0, totalSpp = 0;
     
     let html = `
         <div class="basket-toolbar">
             <span class="basket-count">📋 ${items.length} ${items.length === 1 ? 'товар' : items.length < 5 ? 'товара' : 'товаров'}</span>
+            <div class="basket-spp-block">
+                <label for="basketSpp">СПП покупателя:</label>
+                <div class="basket-spp-input">
+                    <input type="number" id="basketSpp" value="${mpConfig.spp}" min="0" max="100" step="1">
+                    <span>%</span>
+                </div>
+            </div>
             <div class="basket-btns">
                 <button class="basket-excel-btn" id="exportSimBasket">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.5l2-2.5m0 0l2 2.5m-2-2.5V3m2 1h.5a2.5 2.5 0 012.5 2.5v7a2.5 2.5 0 01-2.5 2.5h-5a2.5 2.5 0 01-2.5-2.5v-7A2.5 2.5 0 014 4h.5"/></svg>
@@ -1432,6 +1488,7 @@ function renderSimBasketTable() {
                     <th>Кэф</th>
                     <th>Опт дин.</th>
                     <th>Цена МП</th>
+                    <th>Цена СПП</th>
                     <th>Налог</th>
                     <th>Комиссия</th>
                     <th>Прибыль (1шт)</th>
@@ -1446,8 +1503,11 @@ function renderSimBasketTable() {
         const totalItemRevenue = item.sellPrice * item.stock;
         const profitClass = item.profit > 0 ? 'positive' : item.profit < 0 ? 'negative' : '';
         
+        const totalItemSpp = (item.sppPrice || 0) * item.stock;
+        
         if (item.stock > 0) {
             totalRevenue += totalItemRevenue;
+            totalSpp += totalItemSpp;
             totalProfit += totalItemProfit;
             totalTax += item.tax * item.stock;
             totalComm += item.commission * item.stock;
@@ -1464,6 +1524,7 @@ function renderSimBasketTable() {
                 <td><span class="coef-badge ${item.coef <= 2.5 ? 'coef-low' : item.coef <= 3.5 ? 'coef-mid' : 'coef-high'}">×${item.coef.toFixed(1)}</span></td>
                 <td>${formatMoney(item.optDyn)}</td>
                 <td class="basket-accent">${formatMoney(item.sellPrice)}</td>
+                <td style="color:var(--accent-light);font-weight:700;">${formatMoney(item.sppPrice || 0)}</td>
                 <td>${formatMoney(item.tax)}</td>
                 <td>${formatMoney(item.commission)}</td>
                 <td class="${profitClass}">${formatMoney(item.profit)}</td>
@@ -1486,6 +1547,7 @@ function renderSimBasketTable() {
                     <td></td>
                     <td></td>
                     <td class="basket-accent">${formatMoney(Math.round(totalRevenue))}</td>
+                    <td style="color:var(--accent-light); font-weight:700;">${formatMoney(Math.round(totalSpp))}</td>
                     <td>${formatMoney(Math.round(totalTax))}</td>
                     <td>${formatMoney(Math.round(totalComm))}</td>
                     <td></td>
