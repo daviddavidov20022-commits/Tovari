@@ -369,6 +369,23 @@ function initEventListeners() {
     window.addEventListener('scroll', () => backBtn.classList.toggle('visible', window.scrollY > 300));
     backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
+    // Info modal close
+    document.getElementById('infoModal').addEventListener('click', (e) => {
+        if (e.target.id === 'infoModal' || e.target.closest('.info-modal-close')) {
+            closeInfoModal();
+        }
+    });
+
+    // Stat help buttons
+    document.getElementById('statsSection').addEventListener('click', (e) => {
+        const btn = e.target.closest('.stat-help-btn');
+        if (btn) {
+            e.preventDefault();
+            const type = btn.dataset.info;
+            openInfoModal(type);
+        }
+    });
+
     // Close popups on outside click
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.coef-simulator') && !e.target.closest('.coef-gear')) {
@@ -378,6 +395,72 @@ function initEventListeners() {
             closeSurchargeCalc();
         }
     });
+}
+
+// ===== INFO MODAL =====
+const INFO_DATA = {
+    total: {
+        title: "Всего товаров",
+        text: "Общее количество уникальных товарных позиций (артикулов), которые отображаются при текущем выборе категории и фильтрах.",
+        formula: "Счётчик уникальных артикулов"
+    },
+    instock: {
+        title: "Товаров в наличии",
+        text: "Количество товаров, у которых фактический остаток на складе больше нуля.",
+        formula: "Количество товаров, где Остаток > 0"
+    },
+    totalstock: {
+        title: "Общий остаток (шт)",
+        text: "Суммарное количество всех единиц товара на складе для текущего списка.",
+        formula: "Σ (Остаток всех товаров)"
+    },
+    totalsum: {
+        title: "Общая сумма",
+        text: "Оценка стоимости склада на основе выбранного типа цены (Учетная, Спец Опт или Опт динамика).",
+        formula: "Σ (Активная Цена × Остаток)"
+    },
+    nds: {
+        title: "НДС 5%",
+        text: "Сумма дополнительного налога (5%) для товаров, у которых в таблице включен тумблер НДС.",
+        formula: "Σ (Цена × Остаток × 0.05)"
+    },
+    mp_rev: {
+        title: "Выручка на МП",
+        text: "Прогноз общей выручки от продажи всех остатков по расчетной цене маркетплейса.",
+        formula: "Σ (Цена МП × Остаток)"
+    },
+    mp_tax: {
+        title: "Общий налог",
+        text: "Сумма налога, который необходимо будет уплатить с выручки от продаж на МП (по выбранной ставке %).",
+        formula: "Выручка МП × % Налога"
+    },
+    mp_comm: {
+        title: "Общая комиссия МП",
+        text: "Суммарные выплаты маркетплейсу за продажи (комиссия площадки).",
+        formula: "Выручка МП × % Комиссии"
+    },
+    mp_profit: {
+        title: "Чистая прибыль",
+        text: "Итоговая прогнозируемая прибыль после вычета учетной цены, налогов и комиссий маркетплейса.",
+        formula: "Σ ((Цена МП − Учет.Цена − Налог − Комиссия) × Остаток)"
+    }
+};
+
+function openInfoModal(type) {
+    const data = INFO_DATA[type];
+    if (!data) return;
+    
+    document.getElementById('infoModalTitle').textContent = data.title;
+    document.getElementById('infoModalBody').innerHTML = `
+        <strong>Как рассчитывается этот показатель:</strong>
+        <p>${data.text}</p>
+        <div class="formula-box">${data.formula}</div>
+    `;
+    document.getElementById('infoModal').classList.add('active');
+}
+
+function closeInfoModal() {
+    document.getElementById('infoModal').classList.remove('active');
 }
 
 // ===== UPDATE SINGLE ROW MP (fast, no full render) =====

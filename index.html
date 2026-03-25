@@ -34,7 +34,8 @@
     <!-- Stats Cards -->
     <section class="stats-section" id="statsSection">
         <div class="stats-grid">
-            <div class="stat-card" id="statTotal" data-tooltip="Общее количество уникальных артикулов в выбранной категории.">
+            <div class="stat-card" id="statTotal">
+                <button class="stat-help-btn" data-info="total" title="Как считается?">?</button>
                 <div class="stat-icon">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
                 </div>
@@ -43,7 +44,8 @@
                     <span class="stat-value" id="statTotalValue">0</span>
                 </div>
             </div>
-            <div class="stat-card" id="statInStock" data-tooltip="Количество товаров, у которых фактический остаток больше нуля.">
+            <div class="stat-card" id="statInStock">
+                <button class="stat-help-btn" data-info="instock" title="Как считается?">?</button>
                 <div class="stat-icon stock-icon">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                 </div>
@@ -52,7 +54,8 @@
                     <span class="stat-value" id="statInStockValue">0</span>
                 </div>
             </div>
-            <div class="stat-card" id="statTotalStock" data-tooltip="Суммарное количество всех единиц товара на складе (сумма всех остатков).">
+            <div class="stat-card" id="statTotalStock">
+                <button class="stat-help-btn" data-info="totalstock" title="Как считается?">?</button>
                 <div class="stat-icon units-icon">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 00-8 0v2"/></svg>
                 </div>
@@ -61,7 +64,8 @@
                     <span class="stat-value" id="statTotalStockValue">0</span>
                 </div>
             </div>
-            <div class="stat-card highlight" id="statTotalSum" data-tooltip="Общая стоимость склада (Цена × Остаток). Тип цены (Учетная / Спец Опт / Динамика) можно переключить ниже.">
+            <div class="stat-card highlight" id="statTotalSum">
+                <button class="stat-help-btn" data-info="totalsum" title="Как считается?">?</button>
                 <div class="stat-icon sum-icon">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                 </div>
@@ -70,7 +74,8 @@
                     <span class="stat-value" id="statTotalSumValue">0 ₽</span>
                 </div>
             </div>
-            <div class="stat-card" id="statNds" data-tooltip="Сумма НДС (Цена × Остаток × 0.05). Считается только для товаров, у которых включен переключатель 'НДС 5%' в таблице.">
+            <div class="stat-card" id="statNds">
+                <button class="stat-help-btn" data-info="nds" title="Как считается?">?</button>
                 <div class="stat-icon nds-icon">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                 </div>
@@ -82,7 +87,8 @@
         </div>
 
         <div class="stats-grid mp-stats" id="mpStats" style="display:none; margin-top:12px;">
-            <div class="stat-card mp-card" data-tooltip="Прогноз выручки от продажи всех остатков на Маркетплейсе (Цена МП × Остаток).">
+            <div class="stat-card mp-card">
+                <button class="stat-help-btn" data-info="mp_rev" title="Как считается?">?</button>
                 <div class="stat-icon" style="background:rgba(167,139,250,0.1);color:#a78bfa;">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                 </div>
@@ -91,7 +97,8 @@
                     <span class="stat-value" id="statMpRevenue">0 ₽</span>
                 </div>
             </div>
-            <div class="stat-card mp-card" data-tooltip="Сумма налога, который нужно будет оплатить с выручки на МП (Процент налога % × Выручка МП).">
+            <div class="stat-card mp-card">
+                <button class="stat-help-btn" data-info="mp_tax" title="Как считается?">?</button>
                 <div class="stat-icon" style="background:rgba(248,113,113,0.1);color:#f87171;">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                 </div>
@@ -100,7 +107,8 @@
                     <span class="stat-value" id="statTaxTotal">0 ₽</span>
                 </div>
             </div>
-            <div class="stat-card mp-card" data-tooltip="Сумма комиссионных выплат маркетплейсу (Процент комиссии % × Выручка МП).">
+            <div class="stat-card mp-card">
+                <button class="stat-help-btn" data-info="mp_comm" title="Как считается?">?</button>
                 <div class="stat-icon" style="background:rgba(251,146,60,0.1);color:#fb923c;">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M12 2v20"/></svg>
                 </div>
@@ -109,7 +117,8 @@
                     <span class="stat-value" id="statCommTotal">0 ₽</span>
                 </div>
             </div>
-            <div class="stat-card mp-card highlight" data-tooltip="Итоговая чистая прибыль после вычета всех затрат.&#10;Расчет на 1 шт: Баз.цена − Учёт.цена − Налог(6% от Цены МП).&#10;Далее умножается на остаток." style="background:linear-gradient(135deg,rgba(52,211,153,0.12),rgba(52,211,153,0.04));border-color:rgba(52,211,153,0.2);">
+            <div class="stat-card mp-card highlight" style="background:linear-gradient(135deg,rgba(52,211,153,0.12),rgba(52,211,153,0.04));border-color:rgba(52,211,153,0.2);">
+                <button class="stat-help-btn" data-info="mp_profit" title="Как считается?">?</button>
                 <div class="stat-icon" style="background:rgba(52,211,153,0.15);color:#34d399;">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                 </div>
@@ -273,6 +282,20 @@
             <div class="basket-modal-body" id="simBasketContent">
             </div>
             <div class="modal-resizer" id="basketModalResizer"></div>
+        </div>
+    </div>
+
+    <!-- Info Dialog Modal -->
+    <div class="product-modal" id="infoModal">
+        <div class="modal-container info-modal-container">
+            <div class="modal-header">
+                <div class="modal-title" id="infoModalTitle">Справка</div>
+                <button class="modal-close info-modal-close" title="Закрыть">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="info-modal-body" id="infoModalBody">
+            </div>
         </div>
     </div>
 

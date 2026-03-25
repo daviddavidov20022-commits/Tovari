@@ -184,61 +184,62 @@ body::before {
     opacity: 1;
 }
 
-/* Tooltip styles */
-[data-tooltip] {
-    position: relative;
-    cursor: help;
-}
-
-[data-tooltip]::after {
-    content: attr(data-tooltip);
+/* Help Button in Stats */
+.stat-help-btn {
     position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    background: rgba(28, 28, 39, 0.95);
-    color: var(--text-primary);
-    padding: 10px 14px;
-    border-radius: var(--radius-md);
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-muted);
     font-size: 11px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    width: 240px;
-    box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-light);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0.2px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 2;
 }
 
-[data-tooltip]:hover::after {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+.stat-help-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 10px var(--accent-glow);
 }
 
-/* Arrow for tooltip */
-[data-tooltip]::before {
-    content: '';
-    position: absolute;
-    bottom: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    border: 5px solid transparent;
-    border-top-color: var(--border-light);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
+/* Info Modal Styles */
+.info-modal-container {
+    max-width: 450px !important;
 }
 
-[data-tooltip]:hover::before {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+.info-modal-body {
+    padding: 24px;
+    line-height: 1.6;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.info-modal-body strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.formula-box {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background: rgba(124, 92, 252, 0.05);
+    border: 1px dashed rgba(124, 92, 252, 0.2);
+    border-radius: var(--radius-md);
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--accent-light);
 }
 
 .stat-card.highlight {
