@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SobraniE — Остатки и Прайс-лист</title>
+    <meta name="description" content="Управление остатками и ценами товаров SobraniE">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="url(#logo-grad)"/>
+                        <path d="M8 22V10l8 6-8 6z" fill="rgba(255,255,255,0.9)"/>
+                        <path d="M16 22V10l8 6-8 6z" fill="rgba(255,255,255,0.5)"/>
+                        <defs><linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-name">SobraniE</span>
+                    <span class="logo-sub">Остатки и Прайс-лист</span>
+                </div>
+            </div>
+            <div class="header-date" id="headerDate"></div>
+        </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <section class="stats-section" id="statsSection">
+        <div class="stats-grid">
+            <div class="stat-card" id="statTotal">
+                <div class="stat-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Всего товаров</span>
+                    <span class="stat-value" id="statTotalValue">0</span>
+                </div>
+            </div>
+            <div class="stat-card" id="statInStock">
+                <div class="stat-icon stock-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Товаров в наличии</span>
+                    <span class="stat-value" id="statInStockValue">0</span>
+                </div>
+            </div>
+            <div class="stat-card" id="statTotalStock">
+                <div class="stat-icon units-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 00-8 0v2"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Общий остаток (шт)</span>
+                    <span class="stat-value" id="statTotalStockValue">0</span>
+                </div>
+            </div>
+            <div class="stat-card highlight" id="statTotalSum">
+                <div class="stat-icon sum-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Общая сумма (<span id="sumPriceLabel">Учетная</span>)</span>
+                    <span class="stat-value" id="statTotalSumValue">0 ₽</span>
+                </div>
+            </div>
+            <div class="stat-card" id="statNds">
+                <div class="stat-icon nds-icon">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">НДС 5% (товаров: <span id="ndsCount">0</span>)</span>
+                    <span class="stat-value" id="statNdsValue">0 ₽</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid mp-stats" id="mpStats" style="display:none; margin-top:12px;">
+            <div class="stat-card mp-card">
+                <div class="stat-icon" style="background:rgba(167,139,250,0.1);color:#a78bfa;">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Выручка на МП (продажная)</span>
+                    <span class="stat-value" id="statMpRevenue">0 ₽</span>
+                </div>
+            </div>
+            <div class="stat-card mp-card">
+                <div class="stat-icon" style="background:rgba(248,113,113,0.1);color:#f87171;">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Общий налог <span id="mpTaxLabel">6</span>%</span>
+                    <span class="stat-value" id="statTaxTotal">0 ₽</span>
+                </div>
+            </div>
+            <div class="stat-card mp-card">
+                <div class="stat-icon" style="background:rgba(251,146,60,0.1);color:#fb923c;">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M12 2v20"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Общая комиссия МП <span id="mpCommLabel">35</span>%</span>
+                    <span class="stat-value" id="statCommTotal">0 ₽</span>
+                </div>
+            </div>
+            <div class="stat-card mp-card highlight" style="background:linear-gradient(135deg,rgba(52,211,153,0.12),rgba(52,211,153,0.04));border-color:rgba(52,211,153,0.2);">
+                <div class="stat-icon" style="background:rgba(52,211,153,0.15);color:#34d399;">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Чистая прибыль</span>
+                    <span class="stat-value" style="color:#34d399;" id="statProfitTotal">0 ₽</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Tabs -->
+    <section class="category-section" id="categorySection">
+        <div class="category-tabs" id="categoryTabs"></div>
+    </section>
+
+    <!-- MP Calculator Panel -->
+    <section class="mp-calc-section" id="mpCalcSection">
+        <button class="mp-calc-toggle" id="mpCalcToggle">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="14" height="14" rx="2"/><path d="M5 9h8M9 5v8"/></svg>
+            <span id="mpCalcToggleText">МП Калькулятор</span>
+        </button>
+        <button class="sim-basket-btn" id="simBasketBtn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="14" height="12" rx="1"/><path d="M7 5V3.5A1.5 1.5 0 018.5 2h3A1.5 1.5 0 0113 3.5V5"/><path d="M7 10h6"/></svg>
+            <span>Сводка цен</span>
+            <span class="basket-badge" id="simBasketBadge" style="display:none;">0</span>
+        </button>
+        <div class="mp-calc-panel" id="mpCalcPanel" style="display:none;">
+            <div class="mp-calc-fields">
+                <div class="mp-field">
+                    <label for="mpCommission">Комиссия МП</label>
+                    <div class="mp-input-wrap">
+                        <input type="number" id="mpCommission" value="15" min="0" max="100" step="0.5">
+                        <span class="mp-unit">%</span>
+                    </div>
+                </div>
+                <div class="mp-field">
+                    <label for="mpDelivery">Доставка</label>
+                    <div class="mp-input-wrap">
+                        <input type="number" id="mpDelivery" value="150" min="0" step="10">
+                        <span class="mp-unit">₽</span>
+                    </div>
+                </div>
+                <div class="mp-field">
+                    <label for="mpTax">Налог</label>
+                    <div class="mp-input-wrap">
+                        <input type="number" id="mpTax" value="6" min="0" max="100" step="0.5">
+                        <span class="mp-unit">%</span>
+                    </div>
+                </div>
+                <div class="mp-field mp-info-box">
+                    <span class="mp-formula">Цена МП = (Баз.цена + Доставка) ÷ (1 − Комиссия%)<br>Прибыль = Баз.цена − Учёт.цена − Налог(6% от Цены МП)<br><small style="opacity:0.6">Баз.цена = Спец цена (если ниже) или Опт.дин.</small></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls-section" id="controlsSection">
+        <div class="controls-row">
+            <div class="search-box" id="searchBox">
+                <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="15" y1="15" x2="19" y2="19"/></svg>
+                <input type="text" id="searchInput" placeholder="Поиск по артикулу или названию..." autocomplete="off">
+                <button class="search-clear" id="searchClear" title="Очистить">&times;</button>
+            </div>
+            <div class="sub-category-select" id="subCategorySelectWrap" style="display:none;">
+                <select id="subCategorySelect">
+                    <option value="">Все подкатегории</option>
+                </select>
+            </div>
+            <div class="price-switcher" id="priceSwitcher">
+                <span class="switcher-label">Цена:</span>
+                <div class="switcher-buttons">
+                    <button class="switcher-btn active" data-price="cost_price" id="btnCost">Учетная</button>
+                    <button class="switcher-btn" data-price="spec_opt" id="btnSpecOpt">Спец Опт</button>
+                    <button class="switcher-btn" data-price="opt_dyn" id="btnOptDyn">Опт динамика</button>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label class="filter-checkbox">
+                    <input type="checkbox" id="filterInStock">
+                    <span class="checkbox-custom"></span>
+                    <span>Только в наличии</span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- Table -->
+    <section class="table-section" id="tableSection">
+        <div class="table-wrapper">
+            <table class="products-table" id="productsTable">
+                <thead>
+                    <tr>
+                        <th class="col-num">#</th>
+                        <th class="col-article sortable" data-sort="article">
+                            Артикул
+                            <svg class="sort-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
+                        </th>
+                        <th class="col-name sortable" data-sort="name">
+                            Наименование
+                            <svg class="sort-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
+                        </th>
+                        <th class="col-cat">Категория</th>
+                        <th class="col-stock sortable" data-sort="stock">
+                            Остаток
+                            <svg class="sort-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
+                        </th>
+                        <th class="col-coef sortable" data-sort="coef">
+                            Кэф
+                            <svg class="sort-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
+                        </th>
+                        <th class="col-price sortable" data-sort="price">
+                            Цена
+                            <svg class="sort-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
+                        </th>
+                        <th class="col-sum">Сумма</th>
+                        <!-- MP columns (hidden by default) -->
+                        <th class="col-mp col-mp-comm-input mp-col-hidden">Ком. %</th>
+                        <th class="col-mp col-mp-deliv mp-col-hidden">Доставка</th>
+                        <th class="col-mp col-mp-sell mp-col-hidden sortable" data-sort="sellprice">
+                            Цена МП
+                            <svg class="sort-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
+                        </th>
+                        <th class="col-mp col-mp-tax mp-col-hidden">Налог</th>
+                        <th class="col-mp col-mp-comm mp-col-hidden">Комиссия</th>
+                        <th class="col-mp col-mp-profit mp-col-hidden sortable" data-sort="profit">
+                            Прибыль
+                            <svg class="sort-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
+                        </th>
+                        <th class="col-nds">НДС 5%</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+        <div class="table-footer" id="tableFooter">
+            <span id="showingCount">Показано: 0</span>
+        </div>
+    </section>
+
+    <!-- Product Detail Modal -->
+    <div class="product-modal" id="productModal">
+        <div class="modal-container" id="modalContent">
+        </div>
+    </div>
+
+    <!-- Simulation Basket Modal -->
+    <div class="product-modal" id="simBasketModal">
+        <div class="basket-modal-container" id="basketModalContainer">
+            <div class="basket-modal-header" id="basketModalHeader">
+                <div class="basket-modal-title">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="16" height="14" rx="2"/><path d="M7 5V3a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M7 12h8"/></svg>
+                    Сводка цен — симуляция
+                </div>
+                <button class="modal-close basket-modal-close" title="Закрыть">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="basket-modal-body" id="simBasketContent">
+            </div>
+            <div class="modal-resizer" id="basketModalResizer"></div>
+        </div>
+    </div>
+
+    <!-- Back to top -->
+    <button class="back-to-top" id="backToTop" title="Наверх">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 16V4M4 10l6-6 6 6"/></svg>
+    </button>
+
+    <script src="data_output.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
