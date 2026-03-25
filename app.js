@@ -1939,12 +1939,15 @@ function processSalesJson(json, isPreformatted = false) {
     if (isPreformatted) {
         salesDataRaw = json.map(s => {
             const p = PRODUCTS.find(prod => prod.article === s.article || prod.name === s.name);
-            let coef = 0;
+            let coef = 0, costPrice = 0;
             if (p) {
+                costPrice = p.cost_price || 0;
                 const base = getEffectiveOptDyn(p);
                 if (base && p.cost_price) coef = base / p.cost_price;
             }
-            return { ...s, coef };
+            const totalCost = costPrice * s.count;
+            const totalRev = (costPrice * coef) * s.count;
+            return { ...s, coef, costPrice, totalCost, totalRev };
         });
         renderSales();
         return;
