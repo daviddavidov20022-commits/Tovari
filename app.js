@@ -1903,16 +1903,15 @@ function initSalesSection() {
     const loadSalesBtn = document.getElementById('loadSalesBtn');
     const closeBtn = document.querySelector('.sales-close');
 
-    if (showSalesBtn) showSalesBtn.onclick = () => salesModal.classList.add('active');
-    if (closeBtn) closeBtn.onclick = () => salesModal.classList.remove('active');
-    if (salesModal) {
-        salesModal.onclick = (e) => {
-            if (e.target.id === 'salesModal') salesModal.classList.remove('active');
+    if (showSalesBtn) {
+        showSalesBtn.onclick = () => {
+            if (typeof SALES_DATA !== 'undefined' && !salesDataRaw.length) {
+                processSalesJson(SALES_DATA, true); // data already formatted?
+            }
+            salesModal.classList.add('active');
         };
     }
-
-    if (loadSalesBtn) loadSalesBtn.onclick = () => salesFileInput.click();
-    if (salesFileInput) salesFileInput.onchange = handleSalesFile;
+    if (closeBtn) closeBtn.onclick = () => salesModal.classList.remove('active');
 }
 
 function handleSalesFile(e) {
@@ -1930,7 +1929,20 @@ function handleSalesFile(e) {
     reader.readAsArrayBuffer(file);
 }
 
-function processSalesJson(json) {
+function processSalesJson(json, isPreformatted = false) {
+    if (isPreformatted) {
+        salesDataRaw = json.map(s => {
+            const p = PRODUCTS.find(prod => prod.article === s.article || prod.name === s.name);
+            let coef = 0;
+            if (p) {
+                const base = getEffectiveOptDyn(p);
+                if (base && p.cost_price) coef = base / p.cost_price;
+            }
+            return { ...s, coef };
+        });
+        renderSales();
+        return;
+    }
     const artKeys = ['Артикул поставщика', 'Артикул', 'Vendor Code', 'Supplier Article', 'Арт.'];
     const qtyKeys = ['Количество', 'Кол-во', 'Продано', 'Qty', 'Продано (шт)'];
     const nameKeys = ['Наименование', 'Название', 'Product Name', 'Предмет'];

@@ -345,22 +345,13 @@
     <div class="sales-modal" id="salesModal">
         <div class="sales-content">
             <div class="sales-header">
-                <div class="sales-title">📊 Анализ продаж</div>
+                <div class="sales-title">📊 Анализ продаж (01.01 - 25.03)</div>
                 <div class="sales-actions">
-                    <input type="file" id="salesFileInput" accept=".xlsx, .xls" style="display:none;">
-                    <button class="load-sales-btn" id="loadSalesBtn">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 15h18M12 1v12m0 0l-4-4m4 4l4-4"/></svg>
-                        Загрузить файл отгрузок
-                    </button>
                     <button class="sales-close">&times;</button>
                 </div>
             </div>
             <div class="sales-body" id="salesBody">
-                <div class="sales-empty">
-                    <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>
-                    <p>Загрузите файл с отгрузками для анализа продаж</p>
-                    <p class="sales-hint">Выберите файл «Все отгрузки... .xlsx», который вы загрузили в систему</p>
-                </div>
+                <!-- Sales table will be here -->
             </div>
         </div>
     </div>
@@ -370,6 +361,7 @@
     </div>
 
     <script src="data_output.js"></script>
+    <script src="sales_data.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
