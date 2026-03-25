@@ -493,6 +493,14 @@ const INFO_DATA = {
         text: "Сумма дополнительного налога (5%) для товаров, у которых в таблице включен тумблер НДС.",
         formula: "Σ (Цена × Остаток × 0.05)"
     },
+    mp_profit: {
+        title: "Чистая прибыль",
+        text: "Сумма, которая остается после вычета всех расходов: <br><strong>Прибыль = Выручка - Материал - Доставка - Комиссия - Налог</strong>"
+    },
+    mp_gross: {
+        title: "Прибыль (без мат. и нал.)",
+        text: "Доход до учета стоимости материала и налогов: <br><strong>Сумма = Выручка - Доставка - Комиссия</strong>"
+    },
     mp_rev: {
         title: "Выручка на МП",
         text: "Прогноз общей выручки от продажи всех остатков по расчетной цене маркетплейса.",
@@ -1150,7 +1158,7 @@ function updateStats() {
     document.getElementById('statTotalSumValue').textContent = formatMoney(totalSum);
     updateNdsStats();
     if (mpCalcEnabled) {
-        let totalTax = 0, totalComm = 0, totalProfit = 0, totalSellRevenue = 0;
+        let totalTax = 0, totalComm = 0, totalProfit = 0, totalSellRevenue = 0, totalGross = 0;
         catProducts.forEach(p => {
             if (p.stock > 0) {
                 const mp = calcMp(p);
@@ -1159,6 +1167,7 @@ function updateStats() {
                     totalTax += mp.tax * p.stock;
                     totalComm += mp.commission * p.stock;
                     totalProfit += mp.profit * p.stock;
+                    totalGross += mp.optDyn * p.stock;
                 }
             }
         });
@@ -1167,6 +1176,8 @@ function updateStats() {
         document.getElementById('statCommTotal').textContent = formatMoney(Math.round(totalComm));
         document.getElementById('statProfitTotal').textContent = formatMoney(Math.round(totalProfit));
         document.getElementById('statProfitTotal').style.color = totalProfit >= 0 ? '#34d399' : '#f87171';
+        const grossEl = document.getElementById('statGrossTotal');
+        if (grossEl) grossEl.textContent = formatMoney(Math.round(totalGross));
     }
 }
 
@@ -1236,7 +1247,7 @@ function render() {
 
     // MP Stats
     if (mpCalcEnabled) {
-        let totalTax = 0, totalComm = 0, totalProfit = 0, totalSellRevenue = 0;
+        let totalTax = 0, totalComm = 0, totalProfit = 0, totalSellRevenue = 0, totalGross = 0;
         catProducts.forEach(p => {
             if (p.stock > 0) {
                 const mp = calcMp(p);
@@ -1245,6 +1256,7 @@ function render() {
                     totalTax += mp.tax * p.stock;
                     totalComm += mp.commission * p.stock;
                     totalProfit += mp.profit * p.stock;
+                    totalGross += mp.optDyn * p.stock;
                 }
             }
         });
@@ -1253,6 +1265,8 @@ function render() {
         document.getElementById('statCommTotal').textContent = formatMoney(Math.round(totalComm));
         document.getElementById('statProfitTotal').textContent = formatMoney(Math.round(totalProfit));
         document.getElementById('statProfitTotal').style.color = totalProfit >= 0 ? '#34d399' : '#f87171';
+        const grossEl = document.getElementById('statGrossTotal');
+        if (grossEl) grossEl.textContent = formatMoney(Math.round(totalGross));
     }
 
     // Table
