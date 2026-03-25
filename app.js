@@ -137,6 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
 });
 
+function toggleSalesSort(f) {
+    if (salesSortField === f) salesSortDir = salesSortDir === 'desc' ? 'asc' : 'desc';
+    else { salesSortField = f; salesSortDir = 'desc'; }
+    renderSales();
+}
+
 function initDate() {
     const d = new Date();
     const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -1966,12 +1972,23 @@ function processSalesJson(json, isPreformatted = false) {
 
     salesDataRaw = Object.entries(summary).map(([art, info]) => {
         const p = PRODUCTS.find(prod => prod.article === art || prod.name === info.name);
-        let coef = 0;
+        let coef = 0, costPrice = 0;
         if (p) {
+            costPrice = p.cost_price || 0;
             const base = getEffectiveOptDyn(p);
             if (base && p.cost_price) coef = base / p.cost_price;
         }
-        return { article: art, name: info.name || (p?p.name:'—'), count: info.count, coef: coef };
+        const totalCost = costPrice * info.count;
+        const totalRev = (costPrice * coef) * info.count;
+        return { 
+            article: art, 
+            name: info.name || (p ? p.name : '—'), 
+            count: info.count, 
+            coef: coef, 
+            costPrice: costPrice,
+            totalCost: totalCost,
+            totalRev: totalRev
+        };
     }).filter(s => s.count > 0);
 
     renderSales();
@@ -1995,18 +2012,44 @@ function renderSales() {
         <th>Арт</th>
         <th onclick="toggleSalesSort('name')" style="cursor:pointer">Название ${salesSortField==='name'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
         <th onclick="toggleSalesSort('count')" style="cursor:pointer">Продажи шт. ${salesSortField==='count'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
-        <th onclick="toggleSalesSort('coef')" style="cursor:pointer">Тек. Кэф ${salesSortField==='coef'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+        <th onclick="toggleSalesSort('costPrice')" style="cursor:pointer">Учетка (1шт) ${salesSortField==='costPrice'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+        <th onclick="toggleSalesSort('coef')" style="cursor:pointer">Кэф ${salesSortField==='coef'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+        <th onclick="toggleSalesSort('totalCost')" style="cursor:pointer">Сумма (Учет) ${salesSortField==='totalCost'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+        <th onclick="toggleSalesSort('totalRev')" style="cursor:pointer">Сумма (Кэф) ${salesSortField==='totalRev'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
     </tr></thead><tbody>`;
 
+    let grandTotalCost = 0;
+    let grandTotalRev = 0;
+    let grandTotalCount = 0;
+
     salesDataRaw.forEach((s, i) => {
+        grandTotalCost += s.totalCost;
+        grandTotalRev += s.totalRev;
+        grandTotalCount += s.count;
+
         html += `<tr>
             <td class="sales-rank">${i+1}</td>
             <td style="font-size:11px; color:var(--text-muted)">${s.article}</td>
             <td class="sales-name">${s.name}</td>
             <td class="sales-count">${formatNumber(Math.round(s.count))}</td>
+            <td style="color:var(--text-secondary)">${formatMoney(s.costPrice)}</td>
             <td class="sales-coef-col">${s.coef ? '×' + s.coef.toFixed(2) : '—'}</td>
+            <td style="color:var(--text-muted)">${formatMoney(Math.round(s.totalCost))}</td>
+            <td style="color:var(--accent-light); font-weight:700;">${formatMoney(Math.round(s.totalRev))}</td>
         </tr>`;
     });
+
+    html += `
+        <tr style="background: rgba(124, 92, 252, 0.1); border-top: 2px solid var(--accent); font-weight: 800; position: sticky; bottom: 0; z-index: 10;">
+            <td colspan="3" style="text-align: right; padding-right: 30px;">ИТОГО:</td>
+            <td style="color: var(--accent-light)">${formatNumber(Math.round(grandTotalCount))} шт.</td>
+            <td>—</td>
+            <td>—</td>
+            <td style="color: var(--text-secondary)">${formatMoney(Math.round(grandTotalCost))}</td>
+            <td style="color: var(--accent-light); font-size: 16px;">${formatMoney(Math.round(grandTotalRev))}</td>
+        </tr>
+    `;
+
     html += '</tbody></table>';
     body.innerHTML = html;
 }
