@@ -184,6 +184,63 @@ body::before {
     opacity: 1;
 }
 
+/* Tooltip styles */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(28, 28, 39, 0.95);
+    color: var(--text-primary);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    width: 240px;
+    box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-light);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0.2px;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Arrow for tooltip */
+[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    border: 5px solid transparent;
+    border-top-color: var(--border-light);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+}
+
+[data-tooltip]:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 .stat-card.highlight {
     background: linear-gradient(135deg, rgba(124, 92, 252, 0.12) 0%, rgba(139, 92, 246, 0.06) 100%);
     border-color: rgba(124, 92, 252, 0.2);
