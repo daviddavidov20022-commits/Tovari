@@ -1505,7 +1505,7 @@ function renderSimBasketTable() {
         return;
     }
     
-    let totalRevenue = 0, totalProfit = 0, totalTax = 0, totalComm = 0, totalItems = 0, totalSpp = 0;
+    let totalRevenue = 0, totalSpp = 0, totalProfit = 0, totalTax = 0, totalComm = 0, totalItems = 0, totalClean = 0;
     
     let html = `
         <div class="basket-toolbar">
@@ -1545,6 +1545,8 @@ function renderSimBasketTable() {
                     <th>Комиссия</th>
                     <th>Прибыль (1шт)</th>
                     <th>Прибыль (всего)</th>
+                    <th style="color:var(--green); opacity:0.9;">Чистая (с мат. и нал.)</th>
+                    <th style="color:var(--green); opacity:0.9;">ИТОГО (с мат. и нал.)</th>
                     <th></th>
                 </tr>
             </thead>
@@ -1564,6 +1566,7 @@ function renderSimBasketTable() {
             totalTax += item.tax * item.stock;
             totalComm += item.commission * item.stock;
             totalItems += item.stock;
+            totalClean += item.optDyn * item.stock;
         }
         
         html += `
@@ -1581,6 +1584,8 @@ function renderSimBasketTable() {
                 <td>${formatMoney(item.commission)}</td>
                 <td class="${profitClass}">${formatMoney(item.profit)}</td>
                 <td class="${profitClass} basket-profit-total">${item.stock > 0 ? formatMoney(Math.round(totalItemProfit)) : '—'}</td>
+                <td style="color:var(--green); font-weight:600;">${formatMoney(item.optDyn)}</td>
+                <td style="color:var(--green); font-weight:700;">${item.stock > 0 ? formatMoney(Math.round(item.optDyn * item.stock)) : '—'}</td>
                 <td><button class="basket-remove-btn" data-article="${escapeHtml(item.article)}" title="Удалить">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8"/></svg>
                 </button></td>
@@ -1604,6 +1609,8 @@ function renderSimBasketTable() {
                     <td>${formatMoney(Math.round(totalComm))}</td>
                     <td></td>
                     <td class="${totalProfitClass} basket-profit-total">${formatMoney(Math.round(totalProfit))}</td>
+                    <td style="color:var(--green); font-weight:700;"></td>
+                    <td style="color:var(--green); font-weight:700;">${formatMoney(Math.round(totalClean))}</td>
                     <td></td>
                 </tr>
             </tfoot>
@@ -1716,7 +1723,7 @@ function exportSimToExcel() {
 </head><body><table>`;
 
     // Header
-    html += '<tr><th>Артикул</th><th>Наименование</th><th>Остаток (шт)</th><th>НДС</th><th>Кэф</th><th>Опт дин (1шт)</th><th>Цена МП (1шт)</th><th>Налог (1шт)</th><th>Комиссия (1шт)</th><th>Прибыль (1шт)</th><th>Прибыль (всего)</th></tr>';
+    html += '<tr><th>Артикул</th><th>Наименование</th><th>Остаток (шт)</th><th>НДС</th><th>Кэф</th><th>Опт дин (1шт)</th><th>Цена МП (1шт)</th><th>Налог (1шт)</th><th>Комиссия (1шт)</th><th>Прибыль (1шт)</th><th>Прибыль (всего)</th><th>Прибыль с мат. и нал. (1шт)</th><th>Общая прибыль с мат. и нал.</th></tr>';
 
     // Data rows
     let totStock = 0, totSell = 0, totTax = 0, totComm = 0, totProfit = 0;
@@ -1739,6 +1746,8 @@ function exportSimToExcel() {
         html += '<td class="num">' + item.commission + '</td>';
         html += '<td class="num">' + item.profit + '</td>';
         html += '<td class="num" style="font-weight:bold;color:' + (profitAll >= 0 ? '#2E7D32' : '#C62828') + '">' + profitAll + '</td>';
+        html += '<td class="num">' + item.optDyn + '</td>';
+        html += '<td class="num" style="font-weight:bold;color:#2E7D32">' + Math.round(item.optDyn * item.stock) + '</td>';
         html += '</tr>';
     });
 
@@ -1752,6 +1761,8 @@ function exportSimToExcel() {
     html += '<td class="num">' + Math.round(totComm) + '</td>';
     html += '<td></td>';
     html += '<td class="num">' + Math.round(totProfit) + '</td>';
+    html += '<td></td>';
+    html += '<td class="num">' + Math.round(items.reduce((s,i) => s + (i.optDyn * i.stock), 0)) + '</td>';
     html += '</tr>';
 
     html += '</table></body></html>';
