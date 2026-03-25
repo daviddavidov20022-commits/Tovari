@@ -227,6 +227,12 @@
             <table class="products-table" id="productsTable">
                 <thead>
                     <tr>
+                        <th class="col-select">
+                            <label class="select-all-label">
+                                <input type="checkbox" id="selectAllItems">
+                                <span class="checkbox-custom"></span>
+                            </label>
+                        </th>
                         <th class="col-num">#</th>
                         <th class="col-article sortable" data-sort="article">
                             Артикул
@@ -318,6 +324,10 @@
     <button class="back-to-top" id="backToTop" title="Наверх">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 16V4M4 10l6-6 6 6"/></svg>
     </button>
+
+    <!-- Selection Toolbar -->
+    <div class="selection-toolbar" id="selectionToolbar">
+    </div>
 
     <script src="data_output.js"></script>
     <script src="app.js"></script>

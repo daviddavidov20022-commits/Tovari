@@ -7,6 +7,8 @@ let filterInStock = false;
 let sortField = null;
 let sortDir = 'asc';
 let mpCalcEnabled = false;
+let selectedArticles = new Set();
+let bulkCoef = 2.5;
 
 // Persisted data
 let ndsMap = {};
@@ -129,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initEventListeners();
     initBasketListeners();
     updateBasketBadge();
+    initSelectionToolbar();
     render();
 });
 
@@ -386,6 +389,34 @@ function initEventListeners() {
         });
     });
 
+    // Selection
+    document.getElementById('selectAllItems').addEventListener('change', (e) => {
+        const filtered = getFilteredProducts();
+        if (e.target.checked) {
+            filtered.forEach(p => selectedArticles.add(p.article));
+        } else {
+            filtered.forEach(p => selectedArticles.delete(p.article));
+        }
+        render();
+    });
+
+    document.getElementById('tableBody').addEventListener('change', (e) => {
+        if (e.target.classList.contains('row-checkbox')) {
+            const article = e.target.dataset.article;
+            if (e.target.checked) selectedArticles.add(article);
+            else selectedArticles.delete(article);
+            
+            // Update select all state
+            const filtered = getFilteredProducts();
+            const allSelected = filtered.length > 0 && filtered.every(p => selectedArticles.has(p.article));
+            document.getElementById('selectAllItems').checked = allSelected;
+            
+            // Highlight row
+            e.target.closest('tr').classList.toggle('row-selected', e.target.checked);
+            updateSelectionToolbar();
+        }
+    });
+
     // Modal close
     document.getElementById('productModal').addEventListener('click', (e) => {
         if (e.target.id === 'productModal' || e.target.closest('.modal-close')) {
@@ -393,7 +424,15 @@ function initEventListeners() {
         }
     });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { closeProductModal(); closeSimBasket(); }
+        if (e.key === 'Escape') { 
+            closeProductModal(); 
+            closeSimBasket(); 
+            if (selectedArticles.size > 0 && !activeSimulator) {
+                selectedArticles.clear(); 
+                document.getElementById('selectAllItems').checked = false;
+                render(); 
+            }
+        }
     });
 
     // Back to top
@@ -1213,13 +1252,14 @@ function render() {
 
     // Table
     const tbody = document.getElementById('tableBody');
-    const colSpan = mpCalcEnabled ? 16 : 9;
+    const colSpan = mpCalcEnabled ? 17 : 10;
 
     if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="empty-state"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="24" cy="24" r="20"/><path d="M16 20h0M32 20h0M18 30s2 4 6 4 6-4 6-4"/></svg><p>Товары не найдены</p></div></td></tr>`;
     } else {
         let html = '';
         filtered.forEach((p, i) => {
+            const isSelected = selectedArticles.has(p.article);
             const rawOptDyn = getOptDyn(p);
             const effectiveOptDyn = getEffectiveOptDyn(p);
             const price = currentPrice === 'opt_dyn' ? effectiveOptDyn : p[currentPrice];
@@ -1295,7 +1335,13 @@ function render() {
                 }
             }
 
-            html += `<tr style="animation-delay:${delay}ms">
+            html += `<tr style="animation-delay:${delay}ms" class="${isSelected ? 'row-selected' : ''}">
+                <td class="cell-select">
+                    <label class="row-select-label">
+                        <input type="checkbox" class="row-checkbox" data-article="${escapeHtml(p.article)}" ${isSelected ? 'checked' : ''}>
+                        <span class="checkbox-custom"></span>
+                    </label>
+                </td>
                 <td class="cell-num">${i + 1}</td>
                 <td class="cell-article"><a href="#" class="article-link" data-article="${escapeHtml(p.article)}">${highlightMatch(escapeHtml(p.article), searchQuery)}</a></td>
                 <td class="cell-name">${highlightMatch(escapeHtml(p.name), searchQuery)}</td>
@@ -1342,6 +1388,7 @@ function render() {
         footerText += `  •  Прибыль: ${formatMoney(Math.round(filteredProfit))}`;
     }
     document.getElementById('showingCount').textContent = footerText;
+    updateSelectionToolbar();
 }
 
 // ===== UTILS =====
@@ -1714,4 +1761,101 @@ function exportSimToExcel() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+}
+
+// ===== SELECTION TOOLBAR LOGIC =====
+function initSelectionToolbar() {
+    const toolbar = document.getElementById('selectionToolbar');
+    if (!toolbar) return;
+
+    toolbar.addEventListener('input', (e) => {
+        if (e.target.classList.contains('sel-slider')) {
+            bulkCoef = parseFloat(e.target.value);
+            updateSelectionToolbar();
+        }
+    });
+
+    toolbar.addEventListener('click', (e) => {
+        if (e.target.closest('.sel-send-btn')) {
+            bulkAddToSimBasket();
+        }
+    });
+}
+
+function updateSelectionToolbar() {
+    const toolbar = document.getElementById('selectionToolbar');
+    if (!toolbar) return;
+
+    if (selectedArticles.size === 0) {
+        toolbar.classList.remove('active');
+        return;
+    }
+
+    toolbar.classList.add('active');
+    
+    // Calculate preview stats for selection at bulkCoef
+    let totalRevenue = 0;
+    let totalProfit = 0;
+    let selectedCount = 0;
+
+    selectedArticles.forEach(article => {
+        const p = PRODUCTS.find(prod => prod.article === article);
+        if (p && p.stock > 0) {
+            const virtualMp = calcMp(p, Math.round(p.cost_price * bulkCoef));
+            if (virtualMp) {
+                totalRevenue += virtualMp.sellPrice * p.stock;
+                totalProfit += virtualMp.profit * p.stock;
+                selectedCount++;
+            }
+        }
+    });
+
+    toolbar.innerHTML = `
+        <div class="sel-count">
+            <span class="sel-count-val">${selectedArticles.size}</span>
+            <span class="sel-count-label">выбрано</span>
+        </div>
+        <div class="sel-slider-wrap">
+            <span class="sel-coef-label">Массовый кэф:</span>
+            <span class="sel-coef-val">×${bulkCoef.toFixed(1)}</span>
+            <input type="range" class="sel-slider" min="1.0" max="6.0" step="0.1" value="${bulkCoef}">
+        </div>
+        <div class="sel-stats">
+            <div class="sel-stat-item">
+                <span class="sel-stat-label">Прогноз выручки</span>
+                <span class="sel-stat-val">${formatMoney(Math.round(totalRevenue))}</span>
+            </div>
+            <div class="sel-stat-item">
+                <span class="sel-stat-label">Прогноз прибыли</span>
+                <span class="sel-stat-val ${totalProfit > 0 ? 'positive' : totalProfit < 0 ? 'negative' : ''}">${formatMoney(Math.round(totalProfit))}</span>
+            </div>
+        </div>
+        <button class="sel-send-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5-5-5-5"/></svg>
+            Отправить ${selectedArticles.size} шт
+        </button>
+    `;
+}
+
+function bulkAddToSimBasket() {
+    let addCount = 0;
+    selectedArticles.forEach(article => {
+        const p = PRODUCTS.find(prod => prod.article === article);
+        if (p) {
+            addToSimBasket(p, bulkCoef);
+            addCount++;
+        }
+    });
+    
+    const btn = document.querySelector('.sel-send-btn');
+    if (btn) {
+        btn.innerHTML = '✓ Добавлено';
+        btn.style.background = 'var(--green)';
+    }
+
+    setTimeout(() => {
+        selectedArticles.clear();
+        document.getElementById('selectAllItems').checked = false;
+        render();
+    }, 800);
 }
