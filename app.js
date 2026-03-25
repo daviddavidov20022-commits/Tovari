@@ -2010,16 +2010,22 @@ function renderSales() {
         return salesSortDir === 'desc' ? (vA < vB ? 1 : -1) : (vA > vB ? 1 : -1);
     });
 
-    let html = `<table class="sales-table"><thead><tr>
-        <th onclick="toggleSalesSort('num')">#</th>
-        <th>Арт</th>
-        <th onclick="toggleSalesSort('name')" style="cursor:pointer">Название ${salesSortField==='name'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
-        <th onclick="toggleSalesSort('count')" style="cursor:pointer">Продажи шт. ${salesSortField==='count'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
-        <th onclick="toggleSalesSort('costPrice')" style="cursor:pointer">Учетка (1шт) ${salesSortField==='costPrice'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
-        <th onclick="toggleSalesSort('coef')" style="cursor:pointer">Кэф ${salesSortField==='coef'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
-        <th onclick="toggleSalesSort('totalCost')" style="cursor:pointer">Сумма (Учет) ${salesSortField==='totalCost'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
-        <th onclick="toggleSalesSort('totalRev')" style="cursor:pointer">Сумма (Кэф) ${salesSortField==='totalRev'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
-    </tr></thead><tbody>`;
+    let html = `
+        <table class="sales-table">
+            <thead>
+                <tr>
+                    <th onclick="toggleSalesSort('num')">#</th>
+                    <th>Арт</th>
+                    <th onclick="toggleSalesSort('name')" style="cursor:pointer">Название ${salesSortField==='name'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+                    <th onclick="toggleSalesSort('count')" style="cursor:pointer; white-space:nowrap;">Продажи шт. ${salesSortField==='count'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+                    <th onclick="toggleSalesSort('costPrice')" style="cursor:pointer; white-space:nowrap;">Учетка (1шт) ${salesSortField==='costPrice'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+                    <th onclick="toggleSalesSort('coef')" style="cursor:pointer">Кэф ${salesSortField==='coef'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+                    <th onclick="toggleSalesSort('totalCost')" style="cursor:pointer; white-space:nowrap;">Сумма (Учет) ${salesSortField==='totalCost'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+                    <th onclick="toggleSalesSort('totalRev')" style="cursor:pointer; white-space:nowrap;">Сумма (Кэф) ${salesSortField==='totalRev'?(salesSortDir==='desc'?'▼':'▲'):''}</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
 
     let grandTotalCost = 0;
     let grandTotalRev = 0;
@@ -2034,26 +2040,24 @@ function renderSales() {
             <td class="sales-rank">${i+1}</td>
             <td style="font-size:11px; color:var(--text-muted)">${s.article}</td>
             <td class="sales-name">${s.name}</td>
-            <td class="sales-count">${formatNumber(Math.round(s.count))}</td>
-            <td style="color:var(--text-secondary)">${formatMoney(s.costPrice)}</td>
+            <td class="sales-count" style="white-space:nowrap">${formatNumber(Math.round(s.count))}</td>
+            <td style="color:var(--text-secondary); white-space:nowrap">${formatMoney(s.costPrice)}</td>
             <td class="sales-coef-col">${s.coef ? '×' + s.coef.toFixed(2) : '—'}</td>
-            <td style="color:var(--text-muted)">${formatMoney(Math.round(s.totalCost))}</td>
-            <td style="color:var(--accent-light); font-weight:700;">${formatMoney(Math.round(s.totalRev))}</td>
+            <td style="color:var(--text-muted); white-space:nowrap">${formatMoney(Math.round(s.totalCost))}</td>
+            <td style="color:var(--accent-light); font-weight:700; white-space:nowrap">${formatMoney(Math.round(s.totalRev))}</td>
         </tr>`;
     });
 
-    html += `
-        <tr style="background: rgba(124, 92, 252, 0.1); border-top: 2px solid var(--accent); font-weight: 800; position: sticky; bottom: 0; z-index: 10;">
-            <td colspan="3" style="text-align: right; padding-right: 30px;">ИТОГО:</td>
-            <td style="color: var(--accent-light)">${formatNumber(Math.round(grandTotalCount))} шт.</td>
+    html += `</tbody><tfoot>
+        <tr style="background: rgba(124, 92, 252, 0.15); border-top: 2px solid var(--accent); font-weight: 800;">
+            <td colspan="3" style="text-align: right; padding: 20px 30px; font-size:16px;">ИТОГО:</td>
+            <td style="color: var(--accent-light); white-space:nowrap">${formatNumber(Math.round(grandTotalCount))} шт.</td>
             <td>—</td>
             <td>—</td>
-            <td style="color: var(--text-secondary)">${formatMoney(Math.round(grandTotalCost))}</td>
-            <td style="color: var(--accent-light); font-size: 16px;">${formatMoney(Math.round(grandTotalRev))}</td>
+            <td style="color: var(--text-secondary); white-space:nowrap">${formatMoney(Math.round(grandTotalCost))}</td>
+            <td style="color: var(--accent-light); font-size: 16px; white-space:nowrap">${formatMoney(Math.round(grandTotalRev))}</td>
         </tr>
-    `;
-
-    html += '</tbody></table>';
+    </tfoot></table>`;
     body.innerHTML = html;
 }
 
